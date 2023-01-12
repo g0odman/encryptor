@@ -2,3 +2,6 @@
 *.crt
 *.properties
 .vscode
+*.txt
+*.p12
+.idea

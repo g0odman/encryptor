@@ -4,28 +4,39 @@
 ```ini
 inputFile=input.txt
 outputFile=output.txt
-keyStoreFile=senderkeystore.jks
-KeyStorePassword=senderpassword
+decryptedOutputFile=decrypted_output.txt
 AsymetricAlgorithm=RSA
 SymetricAlgorithm=AES
+HashAlgorithm=SHA-256
 KeyStoreType=JKS
-keyAlias=senderkey
-certificateAlias=receivercert
 outConfigFile=decryption.properties
+
+sender.keyStoreFile=senderkeystore.jks
+sender.KeyStorePassword=senderpassword
+sender.keyAlias=senderkey
+sender.certificateAlias=sendercert
+
+receiver.keyStoreFile=receiverkeystore.jks
+receiver.KeyStorePassword=receiverpassword
+receiver.keyAlias=receiverkey
+receiver.certificateAlias=receivercert
 ```
 
 ## Decryption side
 The previous stage outputs the following
 ```ini
-KeyStorePassword=storepassword
+receiver.encryptionkeyAlias=receiverkey
+secretKey=jyqLOCtGxpjNbau7r16xWaWJckxpRp6sjzlOAMOcHsNiSopouj0DzhxH8adDQJo1op2gQqva3uAHgFXiGQDipa56XKFKU1WC+1rSaVihI4I1tY68HDOok2J8B78bbs2qC3x4NaXBRXf4uLPfp5jDp4bC1vfykTDr3527mHEudGdy7nZm0uzGxQ3cUwI236otk8nPnqRzWLHdzFjNZWbfhWAKfdJdPy9EfQumyx1vHn+KbO97J5mNkDKR8vGwiw78cdOrm4WKXJ1TXlKvIb50Twn8zPZnqWtPVKfNO4DjnJTTCaopQe9zHKP5GlYvfBVnrCEw5UO/nfAvmQuLQw14gA\=\=
+digitalSignature=h5U2O2L3+cxgY9GJSheaxbolEksB8F5OZSab9CHQZ1J3jqPq5IQvFNL4fHUZrOXYWRay36fr38P1+SGH1XaMwOlZ2LS8Q1T+HyfxqKLh0HzpouZJoMqHPqwY03kgO44BHQjN/5xcD8znAc2yPCNhlM4+v/BM5/fgy0zZCNzMj0mScdkMahtewbxgeWYJ7KDyCGqjJuSe1g0hg16stAnKYsZ6Exl591FgmrxRxbgDMCRTCXDUMkH8OsGPBKtmR8e5kwsLRuqS8uhhAFL67ia6/PElHC84+qsNoQ2KaL1OYcFhh82ejonP2lc7WXqvE9ZNkXNTkS2w5P6f88YrTIebcQ\=\=
+receiver.keyStorePassword=receiverpassword
 inputFile=output.txt
+outputFile=decrypted_output.txt
 AsymetricAlgorithm=RSA
 KeyStoreType=JKS
-secretKey=[B@65e579dc
-keyAlias=encryptionkey
-digitalSignature=[B@52d455b8
-keyStoreFile=mykeyStore.jks
+sender.certificateAlias=sendercert
 SymetricAlgorithm=AES
+receiver.keyStoreFile=receiverkeystore.jks
+HashAlgorithm=SHA-256
 ```
 
 We need to add an output file to this 

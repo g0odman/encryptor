@@ -1,6 +1,6 @@
 echo Creating keys and certificates
-keytool -genkeypair -keyalg RSA -keysize 2048 -alias senderkey -keystore senderkeystore.jks -storepass senderpassword -keypass senderpassword -storetype JKS -dname "CN=My Name, OU=My Org, O=My Org, L=My City, S=My State, C=US"
-keytool -genkeypair -keyalg RSA -keysize 2048 -alias receiverkey -keystore receiverkeystore.jks -storepass receiverpassword -keypass senderpassword  -storetype JKS -dname "CN=My Name, OU=My Org, O=My Org, L=My City, S=My State, C=US"
+keytool -genkeypair -keyalg RSA -keysize 2048 -alias senderkey -keystore senderkeystore.jks -storepass senderpassword -keypass senderpassword -storetype JKS -dname "CN=Sender, OU=My Org, O=My Org, L=My City, S=My State, C=US"
+keytool -genkeypair -keyalg RSA -keysize 2048 -alias receiverkey -keystore receiverkeystore.jks -storepass receiverpassword -keypass receiverpassword  -storetype JKS -dname "CN=Receiver, OU=My Org, O=My Org, L=My City, S=My State, C=US"
 echo Exporting certificates
 keytool -exportcert -alias senderkey -keystore senderkeystore.jks -file sendercertificate.crt -storepass senderpassword
 keytool -exportcert -alias receiverkey -keystore receiverkeystore.jks -file receivercertificate.crt -storepass receiverpassword

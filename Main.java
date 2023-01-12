@@ -17,8 +17,12 @@ public class Main {
             System.out.println("Usage: HybridEncryptor <config file>");
             return;
         }
-        PropertiesParser propertiesParser = new PropertiesParser(args[0]);
-        HybridEncryptor hybridEncryptor = new HybridEncryptor(propertiesParser);
-        hybridEncryptor.run();
+        EncryptionPropertiesParser propertiesParser = new EncryptionPropertiesParser(args[0]);
+        HybridEncryptor encryptor = new HybridEncryptor(propertiesParser);
+        //encryptor.run();
+
+        DecryptionPropertiesParser decryptionPropertiesParser = new DecryptionPropertiesParser(propertiesParser.getOutConfigFile());
+        HybridDecryptor decryptor = new HybridDecryptor(decryptionPropertiesParser);
+        decryptor.run();
     }
 }

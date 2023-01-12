@@ -3,10 +3,13 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.KeyStoreException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.InvalidKeyException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.Properties;
 
 import javax.crypto.BadPaddingException;
@@ -19,9 +22,9 @@ import javax.crypto.SecretKey;
 
 class HybridEncryptor {
 
-    private PropertiesParser properties;
+    private EncryptionPropertiesParser properties;
 
-    HybridEncryptor(PropertiesParser properties) throws KeyStoreException {
+    HybridEncryptor(EncryptionPropertiesParser properties) throws KeyStoreException {
         this.properties = properties;
     }
 
@@ -56,19 +59,19 @@ class HybridEncryptor {
             FileNotFoundException, IOException, IllegalBlockSizeException, BadPaddingException {
         // Encrypt secret key
         Cipher cipher = Cipher.getInstance(properties.getAsymetricAlgorithm());
-        cipher.init(Cipher.ENCRYPT_MODE, properties.getPublicKey());
+        cipher.init(Cipher.ENCRYPT_MODE, properties.getReceiverPublicKey());
         byte[] encryptedSecretKey = cipher.doFinal(secretKey.getEncoded());
+        String encodedEncryptedSecretKey = new String(Base64.getEncoder().encodeToString(encryptedSecretKey));
 
-        // Write encrypted secret key and encrypted file to output file
-        FileOutputStream encryptedOut = new FileOutputStream(properties.getOutConfigFile());
-        encryptedOut.write(encryptedSecretKey);
-        encryptedOut.close();
+        byte[] fileSignature = signFile();
+        String encodedFileSignature = new String(Base64.getEncoder().encodeToString(fileSignature));
+
         Properties outProps = properties.getDecryptionConfig();
-        outProps.setProperty("secretKey", encryptedSecretKey.toString());
-        outProps.setProperty("digitalSignature", signFile().toString());
+        outProps.setProperty("secretKey", encodedEncryptedSecretKey);
+        outProps.setProperty("digitalSignature", encodedFileSignature);
         // Write properties to file
         FileOutputStream out = new FileOutputStream(properties.getOutConfigFile());
-        outProps.store(out, "Encryption Configuration");
+        outProps.store(out, "Decryption Configuration");
         out.close();
     }
 
@@ -76,17 +79,19 @@ class HybridEncryptor {
             NoSuchPaddingException, KeyStoreException, CertificateException, FileNotFoundException,
             IllegalBlockSizeException, BadPaddingException, IOException {
         // Sign file
+
+        FileInputStream in = new FileInputStream(properties.getOutputFile());
+        byte[] buffer = new byte[1024];
+        while (in.read(buffer) >= 0) { }
+        in.close();
+        
+        MessageDigest messageDigest = MessageDigest.getInstance(properties.getHashAlgorithm());
+        byte[] hash = messageDigest.digest(buffer);
+
         Cipher cipher = Cipher.getInstance(properties.getAsymetricAlgorithm());
         
         cipher.init(Cipher.ENCRYPT_MODE, properties.getPrivateKey());
-        FileInputStream in = new FileInputStream(properties.getInputFile());
-        byte[] buffer = new byte[1024];
-        int numRead;
-        while ((numRead = in.read(buffer)) >= 0) {
-            cipher.update(buffer, 0, numRead);
-        }
-        in.close();
-        return cipher.doFinal();
+        return cipher.doFinal(hash);
     }
 
     public void run() throws NoSuchAlgorithmException, InvalidKeyException, UnrecoverableKeyException,
