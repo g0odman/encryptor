@@ -10,6 +10,7 @@
             "request": "launch",
             "mainClass": "${file}",
             "args": [
+                "d",
                 ".\\encryption.properties"
             ],
         },
@@ -20,6 +21,7 @@
             "mainClass": "Main",
             "projectName": "encryptor_898cb1a5",
             "args": [
+                "encrypt",
                 ".\\encryption.properties"
             ],
         }
