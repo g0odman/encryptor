@@ -4,12 +4,13 @@
 ```ini
 inputFile=input.txt
 outputFile=output.txt
-keyStoreFile=mykeyStore.jks
-KeyStorePassword=storepassword
+keyStoreFile=senderkeystore.jks
+KeyStorePassword=senderpassword
 AsymetricAlgorithm=RSA
 SymetricAlgorithm=AES
 KeyStoreType=JKS
 keyAlias=encryptionkey
+certificateAlias=receivercert
 outConfigFile=decryption.properties
 ```
 

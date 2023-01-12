@@ -18,8 +18,6 @@ public class PropertiesParser {
 
     private String keyStorePath;
 
-    private String privateKeyStorePassword;
-
     private String AsymetricAlgorithm;
 
     private String SymetricAlgorithm;
@@ -30,11 +28,11 @@ public class PropertiesParser {
 
     private String outConfigFile;
 
-    private String privateKeyPassword;
-
     private String keyStorePassword;
 
     private String encryptionkeyAlias;
+
+    private String certificateAlias;
 
     PropertiesParser(String filePath) throws IOException {
         // Load properties file
@@ -46,10 +44,10 @@ public class PropertiesParser {
         AsymetricAlgorithm = properties.getProperty("AsymetricAlgorithm");
         SymetricAlgorithm = properties.getProperty("SymetricAlgorithm");
         KeyStoreType = properties.getProperty("KeyStoreType");
-        // privateKeyPassword = properties.getProperty("privateKeyPassword");
         keyStorePassword = properties.getProperty("KeyStorePassword");
         encryptionkeyAlias = properties.getProperty("keyAlias");
         outConfigFile = properties.getProperty("outConfigFile");
+        certificateAlias = properties.getProperty("certificateAlias");
     }
 
     public String getOutputFile() {
@@ -79,12 +77,12 @@ public class PropertiesParser {
 
     public Key getPublicKey() throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException,
             CertificateException, FileNotFoundException, IOException {
-        return getKeyStore().getCertificate(this.encryptionkeyAlias).getPublicKey();
+        return getCertificate().getPublicKey();
     }
 
     public Certificate getCertificate() throws KeyStoreException, NoSuchAlgorithmException, CertificateException,
             FileNotFoundException, IOException {
-        return getKeyStore().getCertificate(this.encryptionkeyAlias);
+        return getKeyStore().getCertificate(this.certificateAlias);
     }
 
     public String getAsymetricAlgorithm() {
