@@ -44,9 +44,11 @@ class HybridEncryptor {
     }
 
     private SecretKey generateSecreteKey() throws NoSuchAlgorithmException {
+        
         KeyGenerator keyGenerator = KeyGenerator.getInstance(properties.getSymetricAlgorithm());
         keyGenerator.init(256);
-        return keyGenerator.generateKey();
+        javax.crypto.SecretKey newKey = keyGenerator.generateKey();
+        return newKey;
     }
 
     private void generateDecryptionConfig(SecretKey secretKey) throws NoSuchAlgorithmException, NoSuchPaddingException,
@@ -75,6 +77,7 @@ class HybridEncryptor {
             IllegalBlockSizeException, BadPaddingException, IOException {
         // Sign file
         Cipher cipher = Cipher.getInstance(properties.getAsymetricAlgorithm());
+        
         cipher.init(Cipher.ENCRYPT_MODE, properties.getPrivateKey());
         FileInputStream in = new FileInputStream(properties.getInputFile());
         byte[] buffer = new byte[1024];
@@ -90,6 +93,7 @@ class HybridEncryptor {
             NoSuchPaddingException, KeyStoreException, CertificateException, FileNotFoundException,
             IllegalBlockSizeException, BadPaddingException, IOException {
         SecretKey secretKey = generateSecreteKey();
+        
         encryptFile(secretKey);
         generateDecryptionConfig(secretKey);
     }

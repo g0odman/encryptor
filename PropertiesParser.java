@@ -43,6 +43,7 @@ public class PropertiesParser {
         keyStorePath = properties.getProperty("keyStoreFile");
         AsymetricAlgorithm = properties.getProperty("AsymetricAlgorithm");
         SymetricAlgorithm = properties.getProperty("SymetricAlgorithm");
+        
         KeyStoreType = properties.getProperty("KeyStoreType");
         keyStorePassword = properties.getProperty("KeyStorePassword");
         encryptionkeyAlias = properties.getProperty("keyAlias");
@@ -72,6 +73,7 @@ public class PropertiesParser {
 
     public Key getPrivateKey() throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException,
             CertificateException, FileNotFoundException, IOException {
+        
         return getKeyStore().getKey(this.encryptionkeyAlias, this.keyStorePassword.toCharArray());
     }
 
@@ -100,6 +102,7 @@ public class PropertiesParser {
         properties.setProperty("KeyStorePassword", this.keyStorePassword);
         properties.setProperty("AsymetricAlgorithm", this.AsymetricAlgorithm);
         properties.setProperty("SymetricAlgorithm", this.SymetricAlgorithm);
+        
         properties.setProperty("KeyStoreType", this.KeyStoreType);
         properties.setProperty("keyAlias", this.encryptionkeyAlias);
         return properties;

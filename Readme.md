@@ -9,7 +9,7 @@ KeyStorePassword=senderpassword
 AsymetricAlgorithm=RSA
 SymetricAlgorithm=AES
 KeyStoreType=JKS
-keyAlias=encryptionkey
+keyAlias=senderkey
 certificateAlias=receivercert
 outConfigFile=decryption.properties
 ```
