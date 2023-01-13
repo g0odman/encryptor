@@ -33,7 +33,8 @@ class HybridEncryptor {
         // Encrypt file
         Cipher cipher = Cipher.getInstance(properties.getSymetricAlgorithm());
         cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-        // IvParameterSpec iv = new IvParameterSpec(cipher.getIV());
+        System.out.println("Encrypting file: " + properties.getInputFile());
+        System.out.println("Output file: " + properties.getOutputFile());
         FileInputStream in = new FileInputStream(properties.getInputFile());
         CipherOutputStream out = new CipherOutputStream(new FileOutputStream(properties.getOutputFile()), cipher);
         byte[] buffer = new byte[1024];
@@ -46,8 +47,7 @@ class HybridEncryptor {
 
     }
 
-    private SecretKey generateSecreteKey() throws NoSuchAlgorithmException {
-        
+    private SecretKey generateSecretKey() throws NoSuchAlgorithmException {
         KeyGenerator keyGenerator = KeyGenerator.getInstance(properties.getSymetricAlgorithm());
         keyGenerator.init(256);
         javax.crypto.SecretKey newKey = keyGenerator.generateKey();
@@ -58,11 +58,7 @@ class HybridEncryptor {
             InvalidKeyException, UnrecoverableKeyException, KeyStoreException, CertificateException,
             FileNotFoundException, IOException, IllegalBlockSizeException, BadPaddingException {
         // Encrypt secret key
-        Cipher cipher = Cipher.getInstance(properties.getAsymetricAlgorithm());
-        cipher.init(Cipher.ENCRYPT_MODE, properties.getReceiverPublicKey());
-        byte[] encryptedSecretKey = cipher.doFinal(secretKey.getEncoded());
-        String encodedEncryptedSecretKey = new String(Base64.getEncoder().encodeToString(encryptedSecretKey));
-
+        String encodedEncryptedSecretKey = encryptSecretKey(secretKey);
         byte[] fileSignature = signFile();
         String encodedFileSignature = new String(Base64.getEncoder().encodeToString(fileSignature));
 
@@ -70,26 +66,37 @@ class HybridEncryptor {
         outProps.setProperty("secretKey", encodedEncryptedSecretKey);
         outProps.setProperty("digitalSignature", encodedFileSignature);
         // Write properties to file
+        System.out.println("Writing decryption configuration to file: " + properties.getOutConfigFile());
         FileOutputStream out = new FileOutputStream(properties.getOutConfigFile());
         outProps.store(out, "Decryption Configuration");
         out.close();
+    }
+
+    private String encryptSecretKey(SecretKey secretKey) throws NoSuchAlgorithmException, NoSuchPaddingException,
+            InvalidKeyException, UnrecoverableKeyException, KeyStoreException, CertificateException,
+            FileNotFoundException, IOException, IllegalBlockSizeException, BadPaddingException {
+        Cipher cipher = Cipher.getInstance(properties.getAsymetricAlgorithm());
+        cipher.init(Cipher.ENCRYPT_MODE, properties.getReceiverPublicKey());
+        byte[] encryptedSecretKey = cipher.doFinal(secretKey.getEncoded());
+        String encodedEncryptedSecretKey = new String(Base64.getEncoder().encodeToString(encryptedSecretKey));
+        return encodedEncryptedSecretKey;
     }
 
     private byte[] signFile() throws NoSuchAlgorithmException, InvalidKeyException, UnrecoverableKeyException,
             NoSuchPaddingException, KeyStoreException, CertificateException, FileNotFoundException,
             IllegalBlockSizeException, BadPaddingException, IOException {
         // Sign file
-
+        MessageDigest messageDigest = MessageDigest.getInstance(properties.getHashAlgorithm());
         FileInputStream in = new FileInputStream(properties.getOutputFile());
         byte[] buffer = new byte[1024];
-        while (in.read(buffer) >= 0) { }
+        while (in.read(buffer) >= 0) {
+            messageDigest.update(buffer);
+        }
         in.close();
-        
-        MessageDigest messageDigest = MessageDigest.getInstance(properties.getHashAlgorithm());
-        byte[] hash = messageDigest.digest(buffer);
+        byte[] hash = messageDigest.digest();
 
         Cipher cipher = Cipher.getInstance(properties.getAsymetricAlgorithm());
-        
+
         cipher.init(Cipher.ENCRYPT_MODE, properties.getPrivateKey());
         return cipher.doFinal(hash);
     }
@@ -97,8 +104,8 @@ class HybridEncryptor {
     public void run() throws NoSuchAlgorithmException, InvalidKeyException, UnrecoverableKeyException,
             NoSuchPaddingException, KeyStoreException, CertificateException, FileNotFoundException,
             IllegalBlockSizeException, BadPaddingException, IOException {
-        SecretKey secretKey = generateSecreteKey();
-        
+        SecretKey secretKey = generateSecretKey();
+
         encryptFile(secretKey);
         generateDecryptionConfig(secretKey);
     }

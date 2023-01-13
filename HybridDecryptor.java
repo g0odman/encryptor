@@ -2,21 +2,19 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.InvalidKeyException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Properties;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -29,15 +27,15 @@ class HybridDecryptor {
         this.properties = properties;
     }
 
-    private SecretKey decryptSecretKey() throws NoSuchAlgorithmException, NoSuchPaddingException, 
-    InvalidKeyException, UnrecoverableKeyException, KeyStoreException, CertificateException, 
-    FileNotFoundException, IOException, IllegalBlockSizeException, BadPaddingException {
+    private SecretKey decryptSecretKey() throws NoSuchAlgorithmException, NoSuchPaddingException,
+            InvalidKeyException, UnrecoverableKeyException, KeyStoreException, CertificateException,
+            FileNotFoundException, IOException, IllegalBlockSizeException, BadPaddingException {
         String encryptedSecretKey = properties.getSecretKey();
         byte[] decodedEncryptedSecretKey = Base64.getDecoder().decode(encryptedSecretKey);
         Cipher cipher = Cipher.getInstance(properties.getAsymetricAlgorithm());
         cipher.init(Cipher.DECRYPT_MODE, properties.getPrivateKey());
         byte[] decryptedSecretKey = cipher.doFinal(decodedEncryptedSecretKey);
-        //byte[] decryptedSecretKey = encryptedSecretKey;
+        // byte[] decryptedSecretKey = encryptedSecretKey;
         javax.crypto.SecretKey secretKey = new SecretKeySpec(decryptedSecretKey, properties.getSymetricAlgorithm());
         return secretKey;
     }
@@ -47,7 +45,8 @@ class HybridDecryptor {
         // Decrypt file
         Cipher cipher = Cipher.getInstance(properties.getSymetricAlgorithm());
         cipher.init(Cipher.DECRYPT_MODE, secretKey);
-        // IvParameterSpec iv = new IvParameterSpec(cipher.getIV());
+        System.out.println("Decrypting file: " + properties.getInputFile());
+        System.out.println("Output file: " + properties.getOutputFile());
         FileInputStream in = new FileInputStream(properties.getInputFile());
         CipherOutputStream out = new CipherOutputStream(new FileOutputStream(properties.getOutputFile()), cipher);
         byte[] buffer = new byte[1024];
@@ -63,14 +62,10 @@ class HybridDecryptor {
     private boolean verifySignature() throws NoSuchAlgorithmException, InvalidKeyException, UnrecoverableKeyException,
             NoSuchPaddingException, KeyStoreException, CertificateException, FileNotFoundException,
             IllegalBlockSizeException, BadPaddingException, IOException {
-        // Verify Digital Signature
-        FileInputStream in = new FileInputStream(properties.getInputFile());
-        byte[] buffer = new byte[1024];
-        while (in.read(buffer) >= 0) { }
-        in.close();
-        
-        MessageDigest messageDigest = MessageDigest.getInstance(properties.getHashAlgorithm());
-        byte[] hash = messageDigest.digest(buffer);
+        System.out.println("Verifying signature...");
+        MessageDigest messageDigest = calculateHash();
+
+        byte[] hash = messageDigest.digest();
 
         Cipher cipher = Cipher.getInstance(properties.getAsymetricAlgorithm());
         cipher.init(Cipher.DECRYPT_MODE, properties.getSenderPublicKey());
@@ -78,23 +73,30 @@ class HybridDecryptor {
         String encodedSignature = properties.getDigitalSignature();
         byte[] decodedSignature = Base64.getDecoder().decode(encodedSignature);
         byte[] decryptedSignature = cipher.doFinal(decodedSignature);
-        if (Arrays.equals(decryptedSignature, hash)) {
-            return true;
+        return Arrays.equals(decryptedSignature, hash);
+    }
+
+    private MessageDigest calculateHash() throws FileNotFoundException, NoSuchAlgorithmException, IOException {
+        FileInputStream in = new FileInputStream(properties.getInputFile());
+        byte[] buffer = new byte[1024];
+        MessageDigest messageDigest = MessageDigest.getInstance(properties.getHashAlgorithm());
+        while (in.read(buffer) >= 0) {
+            messageDigest.update(buffer);
         }
-        return false;
+        in.close();
+        return messageDigest;
     }
 
     public void run() throws NoSuchAlgorithmException, InvalidKeyException, UnrecoverableKeyException,
             NoSuchPaddingException, KeyStoreException, CertificateException, FileNotFoundException,
-            IllegalBlockSizeException, BadPaddingException, IOException {
-        
-        if (verifySignature()) {
-            System.out.println("Received legal signature, decrypting");
-            SecretKey secretKey = decryptSecretKey();
-            decryptFile(secretKey);
+            IllegalBlockSizeException, BadPaddingException, IOException, InvalidSignatureException {
+
+        if (!verifySignature()) {
+            throw new InvalidSignatureException();
+
         }
-        else {
-            System.out.println("Bad Signature!");
-        }
+        System.out.println("Signature verified!");
+        SecretKey secretKey = decryptSecretKey();
+        decryptFile(secretKey);
     }
 }

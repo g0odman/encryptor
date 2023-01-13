@@ -15,7 +15,6 @@ public class EncryptionPropertiesParser {
 
     private String decryptedOutputFile;
 
-
     private String AsymetricAlgorithm;
 
     private String SymetricAlgorithm;
@@ -35,8 +34,7 @@ public class EncryptionPropertiesParser {
     private String senderEncryptionkeyAlias;
 
     private String senderCertificateAlias;
-    
-    
+
     private String receiverKeyStorePath;
 
     private String receiverKeyStorePassword;
@@ -57,7 +55,7 @@ public class EncryptionPropertiesParser {
         SymetricAlgorithm = properties.getProperty("SymetricAlgorithm");
         HashAlgorithm = properties.getProperty("HashAlgorithm");
         outConfigFile = properties.getProperty("outConfigFile");
-        
+
         senderKeyStorePath = properties.getProperty("sender.keyStoreFile");
         senderKeyStorePassword = properties.getProperty("sender.KeyStorePassword");
         senderEncryptionkeyAlias = properties.getProperty("sender.keyAlias");
@@ -91,7 +89,7 @@ public class EncryptionPropertiesParser {
 
     public Key getPrivateKey() throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException,
             CertificateException, FileNotFoundException, IOException {
-        
+
         return getKeyStore().getKey(this.senderEncryptionkeyAlias, this.senderKeyStorePassword.toCharArray());
     }
 
@@ -100,7 +98,8 @@ public class EncryptionPropertiesParser {
         return getReceiverCertificate().getPublicKey();
     }
 
-    public Certificate getReceiverCertificate() throws KeyStoreException, NoSuchAlgorithmException, CertificateException,
+    public Certificate getReceiverCertificate()
+            throws KeyStoreException, NoSuchAlgorithmException, CertificateException,
             FileNotFoundException, IOException {
         return getKeyStore().getCertificate(this.receiverCertificateAlias);
     }
@@ -129,8 +128,7 @@ public class EncryptionPropertiesParser {
         properties.setProperty("receiver.keyStorePassword", this.receiverKeyStorePassword);
         properties.setProperty("receiver.encryptionkeyAlias", this.receiverEncryptionkeyAlias);
         properties.setProperty("sender.certificateAlias", this.senderCertificateAlias);
-        
-        
+
         return properties;
     }
 

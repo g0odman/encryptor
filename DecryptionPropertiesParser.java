@@ -11,24 +11,20 @@ import java.security.cert.CertificateException;
 import java.util.Properties;
 
 public class DecryptionPropertiesParser {
-    private String inputFile;   
-    
-    private String outputFile;
+    private String inputFile;
 
+    private String outputFile;
 
     private String AsymetricAlgorithm;
 
     private String SymetricAlgorithm;
 
     private String HashAlgorithm;
-    
 
     private String KeyStoreType;
 
-
     private String senderCertificateAlias;
-    
-    
+
     private String receiverKeyStorePath;
 
     private String receiverKeyStorePassword;
@@ -37,11 +33,12 @@ public class DecryptionPropertiesParser {
 
     private String secretKey;
 
-    private String digitalSignature;    
+    private String digitalSignature;
 
     DecryptionPropertiesParser(String filePath) throws IOException {
         // Load properties file
         Properties properties = new Properties();
+        System.out.println("Loading Decryption Config from" + filePath);
         properties.load(new FileInputStream(filePath));
         inputFile = properties.getProperty("inputFile");
         outputFile = properties.getProperty("outputFile");
