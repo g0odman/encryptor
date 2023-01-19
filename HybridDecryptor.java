@@ -90,7 +90,8 @@ class HybridDecryptor {
 
     public void run() throws NoSuchAlgorithmException, InvalidKeyException, UnrecoverableKeyException,
             NoSuchPaddingException, KeyStoreException, CertificateException, FileNotFoundException,
-            IllegalBlockSizeException, BadPaddingException, IOException, InvalidSignatureException {
+            IllegalBlockSizeException, BadPaddingException, IOException, InvalidSignatureException,
+            NoSuchProviderException {
 
         if (!verifySignature()) {
             throw new InvalidSignatureException();

@@ -111,7 +111,7 @@ class HybridEncryptor {
 
     public void run() throws NoSuchAlgorithmException, InvalidKeyException, UnrecoverableKeyException,
             NoSuchPaddingException, KeyStoreException, CertificateException, FileNotFoundException,
-            IllegalBlockSizeException, BadPaddingException, IOException {
+            IllegalBlockSizeException, BadPaddingException, IOException, NoSuchProviderException {
         SecretKey secretKey = generateSecretKey();
 
         encryptFile(secretKey);
