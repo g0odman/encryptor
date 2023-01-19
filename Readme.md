@@ -2,7 +2,7 @@
 This project is a Hybrid encryptor which utilizes Asymetric and Symetric encryption to encrypt a file between two parties.
 All parameters are passed to the program via the config file. You can see examples of config files in the next section.
 ## Running examples
-Runing the program is very simple. You can use the following command lines to encrypt and decrypt the files:
+Running the program is very simple. You can use the following command lines to either encrypt or decrypt the files:
 ```cmd
 java -jar .\encryptor.jar e .\encryption.properties
 java -jar .\encryptor.jar d .\decryption.properties
@@ -117,3 +117,17 @@ classDiagram
           - String getHashAlgorithm()
       }
 ```
+
+## Algorithms & API
+In our configuration, we selected 3 algorithms - RSA, AES and SHA-256
+- RSA is the most common algorithm for asymmetric encryption and decryption. It runs very fast and is considered statistically secure (as long as a big enough key is chosen and no quantum computer is used). It is very common and of course supported by the Java Crypto API.
+- AES was used for the same reasons as RSA - it is probably the most commonly used algorithm for symmetric encryption and decryption. It also runs very fast and is widely considered secure. Like RSA, it is supported by the Java Crypto API.
+- SHA-256 is a very common algorithm for hashing - it is considered much more secure than SHA-1 or MD4. We delibirated between this algorithm and MD5, both are very hard to find collisions for, and we randomly chose SHA-256. It is supported by the Java Security MessageDigest API which works perfectly for us.
+
+We used the following Java Crypto API:
+- Cipher.getInstance and then cipher.init for creating initialized Cipher objects used for symmetric and asymmetric encryption and decryption. The mode is chosen according to the given parameters, such as Crypto.DECRYPT_MODE/Crypto.ENCRYPT_MODE
+- CipherOutputStream for creating a stream which encrypted/decrypted data can be written to (using the object we created in the previous point). The encrypted data is written using write.
+- cipher.doFinal which finalizes the encryption/decryption of the cipher object obtained by getInstance
+- KeyGenerator.getInstance for creating a KeyGenerator object which we can use to generate a symmetric key.
+- keyGenerator.init, keyGenerator.generateKey for the actual generation of the key using the object.
+- SecretKeySpec constructor in order to create a new SecretKey (for the symmetric secret key that was decrypted using the asymmetric private key).
