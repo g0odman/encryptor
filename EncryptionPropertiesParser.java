@@ -134,7 +134,9 @@ public class EncryptionPropertiesParser {
         properties.setProperty("receiver.keyStorePassword", this.receiverKeyStorePassword);
         properties.setProperty("receiver.encryptionkeyAlias", this.receiverEncryptionkeyAlias);
         properties.setProperty("sender.certificateAlias", this.senderCertificateAlias);
-        properties.setProperty("cryptoProvider", this.provider);
+        if (this.provider != null) {
+            properties.setProperty("cryptoProvider", this.provider);
+        }
 
         return properties;
     }

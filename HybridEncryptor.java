@@ -6,6 +6,7 @@ import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
@@ -19,6 +20,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 
 class HybridEncryptor {
 
@@ -29,10 +31,21 @@ class HybridEncryptor {
     }
 
     private void encryptFile(SecretKey secretKey) throws KeyStoreException, NoSuchAlgorithmException,
-            NoSuchPaddingException, InvalidKeyException, IOException, NoSuchProviderException {
+            NoSuchPaddingException, InvalidKeyException, IOException, NoSuchProviderException,
+            InvalidAlgorithmParameterException {
         // Encrypt file
-        Cipher cipher = Cipher.getInstance(properties.getSymetricAlgorithm(), properties.getProvider());
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+        Cipher cipher = null;
+        if (properties.getProvider() == null)
+            cipher = Cipher.getInstance(properties.getSymetricAlgorithm());
+        else
+            cipher = Cipher.getInstance(properties.getSymetricAlgorithm(), properties.getProvider());
+        System.out.println("Cipher block size: " + cipher.getBlockSize());
+        if (doesAlgorithmUseIV()) {
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec(new byte[16]));
+        } else {
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+        }
+
         System.out.println("Encrypting file: " + properties.getInputFile());
         System.out.println("Output file: " + properties.getOutputFile());
         FileInputStream in = new FileInputStream(properties.getInputFile());
@@ -51,6 +64,15 @@ class HybridEncryptor {
         String algorithm = properties.getSymetricAlgorithm();
         String[] parts = algorithm.split("/");
         return parts[0];
+    }
+
+    private boolean doesAlgorithmUseIV() {
+        String algorithm = properties.getSymetricAlgorithm();
+        String[] parts = algorithm.split("/");
+        if (parts.length < 2) {
+            return false;
+        }
+        return parts[1].equals("CBC");
     }
 
     private SecretKey generateSecretKey() throws NoSuchAlgorithmException, NoSuchPaddingException {
@@ -83,7 +105,12 @@ class HybridEncryptor {
             InvalidKeyException, UnrecoverableKeyException, KeyStoreException, CertificateException,
             FileNotFoundException, IOException, IllegalBlockSizeException, BadPaddingException,
             NoSuchProviderException {
-        Cipher cipher = Cipher.getInstance(properties.getAsymetricAlgorithm(), properties.getProvider());
+        Cipher cipher = null;
+        if (properties.getProvider() == null)
+            cipher = Cipher.getInstance(properties.getAsymetricAlgorithm());
+        else
+            cipher = Cipher.getInstance(properties.getAsymetricAlgorithm(), properties.getProvider());
+
         cipher.init(Cipher.ENCRYPT_MODE, properties.getReceiverPublicKey());
         byte[] encryptedSecretKey = cipher.doFinal(secretKey.getEncoded());
         String encodedEncryptedSecretKey = new String(Base64.getEncoder().encodeToString(encryptedSecretKey));
@@ -103,7 +130,11 @@ class HybridEncryptor {
         in.close();
         byte[] hash = messageDigest.digest();
 
-        Cipher cipher = Cipher.getInstance(properties.getAsymetricAlgorithm(), properties.getProvider());
+        Cipher cipher = null;
+        if (properties.getProvider() == null)
+            cipher = Cipher.getInstance(properties.getAsymetricAlgorithm());
+        else
+            cipher = Cipher.getInstance(properties.getAsymetricAlgorithm(), properties.getProvider());
 
         cipher.init(Cipher.ENCRYPT_MODE, properties.getPrivateKey());
         return cipher.doFinal(hash);
@@ -111,7 +142,8 @@ class HybridEncryptor {
 
     public void run() throws NoSuchAlgorithmException, InvalidKeyException, UnrecoverableKeyException,
             NoSuchPaddingException, KeyStoreException, CertificateException, FileNotFoundException,
-            IllegalBlockSizeException, BadPaddingException, IOException, NoSuchProviderException {
+            IllegalBlockSizeException, BadPaddingException, IOException, NoSuchProviderException,
+            InvalidAlgorithmParameterException {
         SecretKey secretKey = generateSecretKey();
 
         encryptFile(secretKey);
