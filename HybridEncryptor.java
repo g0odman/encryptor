@@ -5,10 +5,10 @@ import java.io.IOException;
 import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.InvalidKeyException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.Properties;
 
@@ -29,9 +29,9 @@ class HybridEncryptor {
     }
 
     private void encryptFile(SecretKey secretKey) throws KeyStoreException, NoSuchAlgorithmException,
-            NoSuchPaddingException, InvalidKeyException, IOException {
+            NoSuchPaddingException, InvalidKeyException, IOException, NoSuchProviderException {
         // Encrypt file
-        Cipher cipher = Cipher.getInstance(properties.getSymetricAlgorithm());
+        Cipher cipher = Cipher.getInstance(properties.getSymetricAlgorithm(), properties.getProvider());
         cipher.init(Cipher.ENCRYPT_MODE, secretKey);
         System.out.println("Encrypting file: " + properties.getInputFile());
         System.out.println("Output file: " + properties.getOutputFile());
@@ -47,16 +47,23 @@ class HybridEncryptor {
 
     }
 
-    private SecretKey generateSecretKey() throws NoSuchAlgorithmException {
-        KeyGenerator keyGenerator = KeyGenerator.getInstance(properties.getSymetricAlgorithm());
-        keyGenerator.init(256);
-        javax.crypto.SecretKey newKey = keyGenerator.generateKey();
+    private String getAlgorithmName() {
+        String algorithm = properties.getSymetricAlgorithm();
+        String[] parts = algorithm.split("/");
+        return parts[0];
+    }
+
+    private SecretKey generateSecretKey() throws NoSuchAlgorithmException, NoSuchPaddingException {
+        KeyGenerator keyGenerator = KeyGenerator.getInstance(getAlgorithmName());
+        keyGenerator.init(properties.getSymmetricKeyLength());
+        SecretKey newKey = keyGenerator.generateKey();
         return newKey;
     }
 
     private void generateDecryptionConfig(SecretKey secretKey) throws NoSuchAlgorithmException, NoSuchPaddingException,
             InvalidKeyException, UnrecoverableKeyException, KeyStoreException, CertificateException,
-            FileNotFoundException, IOException, IllegalBlockSizeException, BadPaddingException {
+            FileNotFoundException, IOException, IllegalBlockSizeException, BadPaddingException,
+            NoSuchProviderException {
         // Encrypt secret key
         String encodedEncryptedSecretKey = encryptSecretKey(secretKey);
         byte[] fileSignature = signFile();
@@ -74,8 +81,9 @@ class HybridEncryptor {
 
     private String encryptSecretKey(SecretKey secretKey) throws NoSuchAlgorithmException, NoSuchPaddingException,
             InvalidKeyException, UnrecoverableKeyException, KeyStoreException, CertificateException,
-            FileNotFoundException, IOException, IllegalBlockSizeException, BadPaddingException {
-        Cipher cipher = Cipher.getInstance(properties.getAsymetricAlgorithm());
+            FileNotFoundException, IOException, IllegalBlockSizeException, BadPaddingException,
+            NoSuchProviderException {
+        Cipher cipher = Cipher.getInstance(properties.getAsymetricAlgorithm(), properties.getProvider());
         cipher.init(Cipher.ENCRYPT_MODE, properties.getReceiverPublicKey());
         byte[] encryptedSecretKey = cipher.doFinal(secretKey.getEncoded());
         String encodedEncryptedSecretKey = new String(Base64.getEncoder().encodeToString(encryptedSecretKey));
@@ -84,7 +92,7 @@ class HybridEncryptor {
 
     private byte[] signFile() throws NoSuchAlgorithmException, InvalidKeyException, UnrecoverableKeyException,
             NoSuchPaddingException, KeyStoreException, CertificateException, FileNotFoundException,
-            IllegalBlockSizeException, BadPaddingException, IOException {
+            IllegalBlockSizeException, BadPaddingException, IOException, NoSuchProviderException {
         // Sign file
         MessageDigest messageDigest = MessageDigest.getInstance(properties.getHashAlgorithm());
         FileInputStream in = new FileInputStream(properties.getOutputFile());
@@ -95,7 +103,7 @@ class HybridEncryptor {
         in.close();
         byte[] hash = messageDigest.digest();
 
-        Cipher cipher = Cipher.getInstance(properties.getAsymetricAlgorithm());
+        Cipher cipher = Cipher.getInstance(properties.getAsymetricAlgorithm(), properties.getProvider());
 
         cipher.init(Cipher.ENCRYPT_MODE, properties.getPrivateKey());
         return cipher.doFinal(hash);

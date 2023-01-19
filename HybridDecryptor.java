@@ -6,6 +6,7 @@ import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
@@ -61,13 +62,13 @@ class HybridDecryptor {
 
     private boolean verifySignature() throws NoSuchAlgorithmException, InvalidKeyException, UnrecoverableKeyException,
             NoSuchPaddingException, KeyStoreException, CertificateException, FileNotFoundException,
-            IllegalBlockSizeException, BadPaddingException, IOException {
+            IllegalBlockSizeException, BadPaddingException, IOException, NoSuchProviderException {
         System.out.println("Verifying signature...");
         MessageDigest messageDigest = calculateHash();
 
         byte[] hash = messageDigest.digest();
 
-        Cipher cipher = Cipher.getInstance(properties.getAsymetricAlgorithm());
+        Cipher cipher = Cipher.getInstance(properties.getAsymetricAlgorithm(), properties.getProvider());
         cipher.init(Cipher.DECRYPT_MODE, properties.getSenderPublicKey());
 
         String encodedSignature = properties.getDigitalSignature();

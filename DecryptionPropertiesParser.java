@@ -35,6 +35,8 @@ public class DecryptionPropertiesParser {
 
     private String digitalSignature;
 
+    private String provider;
+
     DecryptionPropertiesParser(String filePath) throws IOException {
         // Load properties file
         Properties properties = new Properties();
@@ -46,6 +48,7 @@ public class DecryptionPropertiesParser {
         AsymetricAlgorithm = properties.getProperty("AsymetricAlgorithm");
         SymetricAlgorithm = properties.getProperty("SymetricAlgorithm");
         HashAlgorithm = properties.getProperty("HashAlgorithm");
+        provider = properties.getProperty("CryptoProvider");
 
         senderCertificateAlias = properties.getProperty("sender.certificateAlias");
 
@@ -106,6 +109,10 @@ public class DecryptionPropertiesParser {
 
     public String getHashAlgorithm() {
         return HashAlgorithm;
+    }
+
+    public String getProvider() {
+        return provider;
     }
 
 }

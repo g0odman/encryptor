@@ -43,6 +43,10 @@ public class EncryptionPropertiesParser {
 
     private String receiverCertificateAlias;
 
+    private int symmetricKeyLength;
+
+    private String provider;
+
     EncryptionPropertiesParser(String filePath) throws IOException {
         // Load properties file
         Properties properties = new Properties();
@@ -55,6 +59,8 @@ public class EncryptionPropertiesParser {
         SymetricAlgorithm = properties.getProperty("SymetricAlgorithm");
         HashAlgorithm = properties.getProperty("HashAlgorithm");
         outConfigFile = properties.getProperty("outConfigFile");
+        provider = properties.getProperty("cryptoProvider");
+        symmetricKeyLength = Integer.parseInt(properties.getProperty("keyLength"));
 
         senderKeyStorePath = properties.getProperty("sender.keyStoreFile");
         senderKeyStorePassword = properties.getProperty("sender.KeyStorePassword");
@@ -128,8 +134,17 @@ public class EncryptionPropertiesParser {
         properties.setProperty("receiver.keyStorePassword", this.receiverKeyStorePassword);
         properties.setProperty("receiver.encryptionkeyAlias", this.receiverEncryptionkeyAlias);
         properties.setProperty("sender.certificateAlias", this.senderCertificateAlias);
+        properties.setProperty("cryptoProvider", this.provider);
 
         return properties;
+    }
+
+    public int getSymmetricKeyLength() {
+        return symmetricKeyLength;
+    }
+
+    public String getProvider() {
+        return provider;
     }
 
 }
