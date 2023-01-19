@@ -1,9 +1,4 @@
-*.jks
-*.crt
-*.properties
 .vscode
-*.txt
 *.p12
 .idea
-*.jar
-output.txt
+.json

@@ -10,7 +10,7 @@
             "request": "launch",
             "mainClass": "${file}",
             "args": [
-                "d",
+                "e",
                 ".\\encryption.properties"
             ],
         },

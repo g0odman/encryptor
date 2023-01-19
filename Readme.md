@@ -131,3 +131,25 @@ We used the following Java Crypto API:
 - KeyGenerator.getInstance for creating a KeyGenerator object which we can use to generate a symmetric key.
 - keyGenerator.init, keyGenerator.generateKey for the actual generation of the key using the object.
 - SecretKeySpec constructor in order to create a new SecretKey (for the symmetric secret key that was decrypted using the asymmetric private key).
+
+
+## Example of a successful run
+The following run was done on the attached plaintext.txt with the attached encryption.properties. The command line was:
+    java -jar .\encryptor.jar e .\encryption.properties
+The output configuration was in decryption.properties and the encrypted file is in encrypted.txt. The following output is printed to the console:
+    Encrypting!
+    Encrypting file: plaintext.txt
+    Output file: encrypted.txt
+    Writing decryption configuration to file: decryption.properties
+    Done!
+
+The decryption program was run on the generated configuration and the generated encrypted file. The command line was:
+    java -jar .\encryptor.jar d .\decryption.properties
+The output decrypted file in the attached decrypted.txt file. The following output is printed to the console:
+    Decrypting!
+    Loading Decryption Config from.\decryption.properties
+    Verifying signature...
+    Signature verified!
+    Decrypting file: encrypted.txt
+    Output file: decrypted.txt
+    Done!
