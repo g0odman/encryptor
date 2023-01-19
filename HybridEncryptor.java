@@ -31,7 +31,11 @@ class HybridEncryptor {
     private void encryptFile(SecretKey secretKey) throws KeyStoreException, NoSuchAlgorithmException,
             NoSuchPaddingException, InvalidKeyException, IOException, NoSuchProviderException {
         // Encrypt file
-        Cipher cipher = Cipher.getInstance(properties.getSymetricAlgorithm(), properties.getProvider());
+        Cipher cipher = null;
+        if (properties.getProvider() == null)
+            cipher = Cipher.getInstance(properties.getSymetricAlgorithm());
+        else
+            cipher = Cipher.getInstance(properties.getSymetricAlgorithm(), properties.getProvider());
         cipher.init(Cipher.ENCRYPT_MODE, secretKey);
         System.out.println("Encrypting file: " + properties.getInputFile());
         System.out.println("Output file: " + properties.getOutputFile());
@@ -83,7 +87,11 @@ class HybridEncryptor {
             InvalidKeyException, UnrecoverableKeyException, KeyStoreException, CertificateException,
             FileNotFoundException, IOException, IllegalBlockSizeException, BadPaddingException,
             NoSuchProviderException {
-        Cipher cipher = Cipher.getInstance(properties.getAsymetricAlgorithm(), properties.getProvider());
+        Cipher cipher = null;
+        if (properties.getProvider() == null)
+            cipher = Cipher.getInstance(properties.getAsymetricAlgorithm());
+        else
+            cipher = Cipher.getInstance(properties.getAsymetricAlgorithm(), properties.getProvider());
         cipher.init(Cipher.ENCRYPT_MODE, properties.getReceiverPublicKey());
         byte[] encryptedSecretKey = cipher.doFinal(secretKey.getEncoded());
         String encodedEncryptedSecretKey = new String(Base64.getEncoder().encodeToString(encryptedSecretKey));
@@ -103,7 +111,11 @@ class HybridEncryptor {
         in.close();
         byte[] hash = messageDigest.digest();
 
-        Cipher cipher = Cipher.getInstance(properties.getAsymetricAlgorithm(), properties.getProvider());
+        Cipher cipher = null;
+        if (properties.getProvider() == null)
+            cipher = Cipher.getInstance(properties.getAsymetricAlgorithm());
+        else
+            cipher = Cipher.getInstance(properties.getAsymetricAlgorithm(), properties.getProvider());
 
         cipher.init(Cipher.ENCRYPT_MODE, properties.getPrivateKey());
         return cipher.doFinal(hash);

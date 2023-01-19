@@ -30,21 +30,30 @@ class HybridDecryptor {
 
     private SecretKey decryptSecretKey() throws NoSuchAlgorithmException, NoSuchPaddingException,
             InvalidKeyException, UnrecoverableKeyException, KeyStoreException, CertificateException,
-            FileNotFoundException, IOException, IllegalBlockSizeException, BadPaddingException {
+            FileNotFoundException, IOException, IllegalBlockSizeException, BadPaddingException,
+            NoSuchProviderException {
         String encryptedSecretKey = properties.getSecretKey();
         byte[] decodedEncryptedSecretKey = Base64.getDecoder().decode(encryptedSecretKey);
-        Cipher cipher = Cipher.getInstance(properties.getAsymetricAlgorithm());
+        Cipher cipher = null;
+        if (properties.getProvider() == null)
+            cipher = Cipher.getInstance(properties.getAsymetricAlgorithm());
+        else
+            cipher = Cipher.getInstance(properties.getSymetricAlgorithm(), properties.getProvider());
         cipher.init(Cipher.DECRYPT_MODE, properties.getPrivateKey());
         byte[] decryptedSecretKey = cipher.doFinal(decodedEncryptedSecretKey);
-        // byte[] decryptedSecretKey = encryptedSecretKey;
-        javax.crypto.SecretKey secretKey = new SecretKeySpec(decryptedSecretKey, properties.getSymetricAlgorithm());
+        String algorithmName = properties.getSymetricAlgorithm().split("/")[0];
+        SecretKey secretKey = new SecretKeySpec(decryptedSecretKey, algorithmName);
         return secretKey;
     }
 
     private void decryptFile(SecretKey secretKey) throws KeyStoreException, NoSuchAlgorithmException,
-            NoSuchPaddingException, InvalidKeyException, IOException {
+            NoSuchPaddingException, InvalidKeyException, IOException, NoSuchProviderException {
         // Decrypt file
-        Cipher cipher = Cipher.getInstance(properties.getSymetricAlgorithm());
+        Cipher cipher = null;
+        if (properties.getProvider() == null)
+            cipher = Cipher.getInstance(properties.getSymetricAlgorithm());
+        else
+            cipher = Cipher.getInstance(properties.getSymetricAlgorithm(), properties.getProvider());
         cipher.init(Cipher.DECRYPT_MODE, secretKey);
         System.out.println("Decrypting file: " + properties.getInputFile());
         System.out.println("Output file: " + properties.getOutputFile());
@@ -68,7 +77,11 @@ class HybridDecryptor {
 
         byte[] hash = messageDigest.digest();
 
-        Cipher cipher = Cipher.getInstance(properties.getAsymetricAlgorithm(), properties.getProvider());
+        Cipher cipher = null;
+        if (properties.getProvider() == null)
+            cipher = Cipher.getInstance(properties.getAsymetricAlgorithm());
+        else
+            cipher = Cipher.getInstance(properties.getAsymetricAlgorithm(), properties.getProvider());
         cipher.init(Cipher.DECRYPT_MODE, properties.getSenderPublicKey());
 
         String encodedSignature = properties.getDigitalSignature();
