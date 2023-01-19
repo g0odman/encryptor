@@ -34,7 +34,7 @@ receiver.certificateAlias=receivercert
 ```
 If one would like, he could add a crypto Provider by adding the following line to the properties file:
 ```ini
-cryptoProvider=SUN
+cryptoProvider=MyCryptoProvider 
 ```
 ### Decryption side
 The encryption program outputs the config file to `outConfigFile`. An example config file is as follows:
