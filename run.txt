@@ -1,0 +1,2 @@
+java -jar .\encryptor.jar e .\encryption.properties
+java -jar .\encryptor.jar d .\decryption.properties
